@@ -8,7 +8,7 @@ class ProgressIndicatorWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return LinearProgressIndicator( //componetne do próprio flutter
-      value: 0.3,
+      value: value,
       backgroundColor: AppColors.chartSecondary,
       valueColor: AlwaysStoppedAnimation<Color>(AppColors.chartPrimary)
     );
