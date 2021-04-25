@@ -28,6 +28,14 @@ class _ChallengePageState extends State<ChallengePage> {
     super.initState();
   }
 
+  void nextPage() {
+    if(controller.currentPage < widget.questions.length)
+      pageController.nextPage(
+      duration: Duration(milliseconds: 50),
+      curve: Curves.linear,
+      );
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(//Scaffold --> esqueleto da página
       appBar: PreferredSize(
@@ -61,7 +69,10 @@ class _ChallengePageState extends State<ChallengePage> {
         controller: pageController,
         children:
           widget.questions.map((e) => QuizWidget(
-            question: e)).toList(),
+            question: e,
+            onChange: nextPage,
+            )
+          ).toList(),
         ),
       //QuizWidget(question: widget.questions[0],
         //title: "O que o Flutter faz em sua totalidade?"
@@ -73,23 +84,32 @@ class _ChallengePageState extends State<ChallengePage> {
             right: 20,
             left: 20
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Expanded(child: NextButtonWidget.white(
-                label: "Pular",
-                onTap: (){
-                  pageController.nextPage(
-                    duration: Duration(milliseconds: 50),
-                    curve: Curves.linear,
-                  );
-                },)),
-              SizedBox(width: 7,),
-              Expanded(child: NextButtonWidget.green(
-                label: "Confirmar",
-                onTap: (){},)),
-            ],
-          ),
+          child: ValueListenableBuilder<int>(
+            valueListenable: controller.currentPageNotifier,
+            builder: (context, value, _) =>
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    if(value < widget.questions.length)
+                      Expanded(child: NextButtonWidget.white(
+                        label: "Pular",
+                        onTap: nextPage,
+                      )),
+                    if(value == widget.questions.length)
+                      Expanded(child: NextButtonWidget.green(
+                        label: "Confirmar",
+                        onTap: (){
+                          Navigator.pop(context);
+                        },
+                      )),
+                    /*if(value != widget.questions.length)
+                      Expanded(child: NextButtonWidget.green(
+                        label: "Confirmar",
+                        onTap: nextPage,
+                      )),*/
+                  ],
+                )
+          )
         ),
       ),
     );
