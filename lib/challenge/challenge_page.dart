@@ -1,17 +1,33 @@
+import 'package:devquiz/challenge/challenge_controller.dart';
 import 'package:devquiz/challenge/widgets/next_button/next_button_widget.dart';
 import 'package:devquiz/challenge/widgets/question_indicator/question_indicator_widget.dart';
 import 'package:devquiz/challenge/widgets/quiz/quiz_widget.dart';
+import 'package:devquiz/shared/models/question_model.dart';
 import 'package:flutter/material.dart';
 
 class ChallengePage extends StatefulWidget {
-  ChallengePage({Key? key}) : super(key: key);
+  final List<QuestionModel> questions;
+  ChallengePage({
+    Key? key,
+    required this.questions
+  }) : super(key: key);
 
   @override
   _ChallengePageState createState() => _ChallengePageState();
 }
 
 class _ChallengePageState extends State<ChallengePage> {
+  final controller = ChallengeController();
+  final pageController = PageController();
   @override
+
+  void initState() {
+    pageController.addListener(() {
+      controller.currentPage = pageController.page!.toInt() + 1;
+    });
+    super.initState();
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(//Scaffold --> esqueleto da página
       appBar: PreferredSize(
@@ -27,14 +43,28 @@ class _ChallengePageState extends State<ChallengePage> {
                   Navigator.pop(context);
                 }
               ),
-              QuestionIndicatorWidget(),
+              //para não ficar rebuidando a página toda vez que
+              //muda de questão:
+              ValueListenableBuilder<int>(
+                valueListenable: controller.currentPageNotifier,
+                builder: (context, value, _) => QuestionIndicatorWidget(
+                  currentPage: value,
+                  lenght: widget.questions.length,
+                ),
+              ),
             ],
           ),
         ),
       ),
-      body: QuizWidget(
-        title: "O que o Flutter faz em sua totalidade?"
-      ),
+      body: PageView(
+        physics: NeverScrollableScrollPhysics(),
+        controller: pageController,
+        children:
+          widget.questions.map((e) => QuizWidget(
+            question: e)).toList(),
+        ),
+      //QuizWidget(question: widget.questions[0],
+        //title: "O que o Flutter faz em sua totalidade?"
       bottomNavigationBar: SafeArea(
         bottom: true,
         child: Padding(
@@ -48,7 +78,12 @@ class _ChallengePageState extends State<ChallengePage> {
             children: [
               Expanded(child: NextButtonWidget.white(
                 label: "Pular",
-                onTap: (){},)),
+                onTap: (){
+                  pageController.nextPage(
+                    duration: Duration(milliseconds: 50),
+                    curve: Curves.linear,
+                  );
+                },)),
               SizedBox(width: 7,),
               Expanded(child: NextButtonWidget.green(
                 label: "Confirmar",
